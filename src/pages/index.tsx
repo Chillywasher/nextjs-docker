@@ -12,6 +12,8 @@ export default function Home() {
 
       <main className={styles.main}>
         <h1>My Website</h1>
+
+        <h2>Testing Testing 1,2,3</h2>
       </main>
 
       <footer className={styles.footer}>
