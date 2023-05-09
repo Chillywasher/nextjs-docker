@@ -14,11 +14,21 @@
 }
 
 .sensor h2 {
-    font-size: 1.1em;
+    font-size: 1.2em;
+    margin: 0;
+    color: lime;
+}
+
+.sensor h2 small {
+    color: white;
+    font-weight: normal;
+    font-size: 0.6em;
     margin: 0;
 }
 
 .sensor h4 {
     font-size: 0.8em;
+    
     margin: 0;
+    color: white;
 }

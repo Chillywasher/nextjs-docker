@@ -12,7 +12,7 @@ export default function Sensor(props: SensorProps) {
     return (
 
         <div className={styles.sensor}>
-            <h2>{props.value.toString()}{props.unit}</h2>
+            <h2>{props.value.toString()}<small>{props.unit}</small></h2>
             <h4>{props.label}</h4>
         </div>
 
