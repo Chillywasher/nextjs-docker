@@ -13,26 +13,3 @@
   justify-content: center;
   width: 100%;
 }
-
-.rates {
-  display: flex;
-  flex-wrap: wrap;
-  flex: 50%;
-  padding: 0px;
-  width: 800px;
-}
-
-
-
-.rate_box h2 {
-  font-size: 1.2em;
-  margin-bottom: 10px;  
-  margin-top: 10px;
-}
-
-.rate_box h3 {
-  font-size: 0.8em;
-  margin-bottom: 10px;  
-  margin-top: 10px;
-}
-

@@ -46,8 +46,8 @@ export default function Home() {
 
   useEffect(() => {
     const dataFetch = async () => {
-      const baseUrl = `http://127.0.0.1:8000`
-      // const baseUrl = `http://192.168.102.234:8040`
+      // const baseUrl = `http://127.0.0.1:8000`
+      const baseUrl = `http://192.168.102.234:8040`
       const url = `${baseUrl}/octopus/rates_with_battery_schedule/AGILE-FLEX-22-11-25?period_from=${dt.toISOString()}&period_to=${dt2.toISOString()}&refresh=${refresh}`
       const data = await (await fetch(url)).json();
       setRatesData(data);
