@@ -1,0 +1,29 @@
+.rate_box {
+    border-radius: 10px;
+    border-style: solid;
+    border-width: 3px;
+    cursor: pointer;
+    height: 100px;
+    margin: 5px;
+    text-align: center;
+    width: 100px;
+}
+
+.rate_weather {
+    font-size: 0.7em;
+    height: 20px;
+    line-height: normal;
+    margin: 0;
+}
+
+.uv_emblem {
+    background-color: white;
+    border-radius: 20px;
+    color: black;
+    display: inline;
+    font-size: 1em;
+    font-weight: bold;
+    margin-left: 2px;
+    padding-left: 2px;
+    padding-right: 2px;
+}

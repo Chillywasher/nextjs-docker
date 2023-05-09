@@ -1,0 +1,13 @@
+.rates_placeholder {
+    display: flex;
+}
+
+.rates_container {
+    align-content: flex-start;
+    align-items: flex-start;
+    display: flex;
+    flex-wrap: wrap;
+    flex: 50%;
+    padding: 0px;
+    width: 800px;
+}
