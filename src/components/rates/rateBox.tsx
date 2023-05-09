@@ -2,7 +2,7 @@ import styles from './ratebox.module.css'
 
 type RateBoxProps = {
     children?: React.ReactNode;
-    date_on: Date;
+    scheduled: Date;
     on_click: Function;
   }
 
@@ -14,8 +14,8 @@ function getColorFromValue(value: number) {
     return "#000000"
 }
 
-function getBorderColor(rate_date: Date, date_on: Date, value: number) {
-    if (date_on != null) return "lime"
+function getBorderColor(rate_date: Date, scheduled: Date, value: number) {
+    if (scheduled != null) return "lime"
     let rDate = new Date(rate_date)
     let dt2 = new Date(rDate.getTime() + 1800000)
 
@@ -30,7 +30,7 @@ export default function RateBox(props: RateBoxProps) {
     let value = props.children[0].props.v
 
     let bg = getColorFromValue(value)
-    let bc = getBorderColor(rate_date, props.date_on, value)
+    let bc = getBorderColor(rate_date, props.scheduled, value)
 
     return (
         <div

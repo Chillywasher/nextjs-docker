@@ -177,7 +177,7 @@ export default function Home() {
               <RatesTitle day="today" />
 
               {ratesData.filter(filterToday).map((rate: Rate, index: number) =>
-                <RateBox key={index} date_on={rate.scheduled} on_click={setSchedule}>
+                <RateBox key={index} scheduled={rate.scheduled} on_click={setSchedule}>
                   <RateValue v={rate.value_inc_vat} />
                   <RateWeather description={rate.weather} uv_index={rate.uv_index} />
                   <RateTime dt={rate.valid_from} />
@@ -191,7 +191,7 @@ export default function Home() {
               <RatesTitle day="tomorrow" />
 
               {ratesData.filter(filterTomorrow).map((rate: Rate, index: number) =>
-                <RateBox key={index} date_on={rate.date_on} on_click={setSchedule}>
+                <RateBox key={index} scheduled={rate.scheduled} on_click={setSchedule}>
                   <RateValue v={rate.value_inc_vat} />
                   <RateWeather description={rate.weather} uv_index={rate.uv_index} />
                   <RateTime dt={rate.valid_from} />
