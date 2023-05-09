@@ -1,4 +1,6 @@
-
+type RateValueProps = {
+    v: number;
+  }
 
 export default function RateValue(props: RateValueProps) {
     return (

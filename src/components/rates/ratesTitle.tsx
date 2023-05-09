@@ -1,4 +1,6 @@
-import '../../models/rates'
+type RatesTitleProps = {
+    day: string
+  }
 
 export default function RatesTitle(props: RatesTitleProps) {
 

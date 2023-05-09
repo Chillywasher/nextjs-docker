@@ -1,5 +1,6 @@
-
-
+type RateTimeProps = {
+    dt: Date;
+  }
 
 export default function RateTime(props: RateTimeProps) {
     let local = new Date(props.dt)

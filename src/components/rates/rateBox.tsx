@@ -1,5 +1,11 @@
 import styles from './ratebox.module.css'
 
+type RateBoxProps = {
+    children?: React.ReactNode;
+    date_on: Date;
+    on_click: Function;
+  }
+
 function getColorFromValue(value: number) {
     if (value <= 12) return "green"
     if (value <= 20) return "#FF00FF"

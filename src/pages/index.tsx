@@ -1,45 +1,59 @@
+"use client"
+
 import Head from 'next/head'
 import styles from '../styles/Home.module.css'
-import { useRates } from '../components/useRates'
 import { postData } from '../utils/api'
-import { useState } from 'react'
-import useSWR from 'swr'
+import { useState, useEffect } from 'react'
+import Sensor from '../components/sensors/sensor'
+
+
+import SensorContainer from '../components/sensors/sensorContainer'
+import RatesContainer from '../components/rates/ratesContainer'
+import RatesPlaceholder from '../components/rates/ratesPlaceholder'
+import RatesTitle from '../components/rates/ratesTitle'
+import RateBox from '../components/rates/rateBox'
+import RateValue from '../components/rates/rateValue'
+import RateWeather from '../components/rates/rateWeather'
+import RateTime from '../components/rates/rateTime'
 
 type Rate = {
-  value_inc_vat: number,
-  valid_from: Date,
-  date_on: Date,
-  weather: string,
-  uv_index: number,
+  value_inc_vat: number;
+  valid_from: Date;
+  scheduled: Date;
+  weather: string;å
+  uv_index: number;
 }
 
-type RateBoxProps = {
-  children?: React.ReactNode,
-  date_on: Date
+type SensorData = {
+
+  dat: Date;
+  batChargePower: number;
+  batDischargePower: number;
+  SoC: number;
+  batTemperature: number;
+  feedinPower: number;
+  generationPower: number;
+  gridConsumptionPower: number;
+  loadsPower: number;
+  pv1Power: number;
+  pv2Power: number;
+  pv3Power: number;
+  pv4Power: number;
+  pvPower: number;
+  chargeEnergyToTal: number;
+  dischargeEnergyToTal: number;
+  feedin: number;
+  generation: number;
+  gridConsumption: number;
+  loads: number;
+  input: number;
+
 }
-
-type RateValueProps = {
-  v: number
-}
-
-type RateTimeProps = {
-  dt: Date
-}
-
-type RateWeatherProps = {
-  description: string,
-  uv_index: number
-}
-
-type useRatesProps = {
-  period_from: Date,
-  period_to: Date
-}
-
-
 
 export default function Home() {
 
+  const [ratesData, setRatesData] = useState(Array<Rate>)
+  const [sensorsData, setSensorsData] = useState(null)
 
   let dt = new Date()
   dt.setHours(0, 0, 0, 0)
@@ -48,24 +62,8 @@ export default function Home() {
   dt2.setHours(0, 0, 0, 0)
   dt2.setDate(dt2.getDate() + 2)
 
-  console.log(dt, dt2)
-
   const fetcher = async (url: string) => await fetch(url).then((res) => res.json());
-  const [refresh, setRefresh] = useState(new Date())
-  const baseUrl = `http://127.0.0.1:8000`
-  // const baseUrl = `http://192.168.102.234:8040`
-  const url = `${baseUrl}/octopus/rates_with_battery_schedule/AGILE-FLEX-22-11-25?period_from=${dt.toISOString()}&period_to=${dt2.toISOString()}&refresh=${refresh}`    
-  const { data, error, isLoading } = useSWR(url, fetcher)
-
-
-  const printToday = () => {
-    return dt.toLocaleDateString("en-GB", { "weekday": "long", "day": "numeric", "month": "long" })
-  }
-
-  const printTomorrow = () => {
-    let tmrrw = tomorrow()
-    return tmrrw.toLocaleDateString("en-GB", { "weekday": "long", "day": "numeric", "month": "long" })
-  }
+  const [refresh, setRefresh] = useState(Date.now())
 
   const tomorrow = () => {
     let today = new Date()
@@ -74,17 +72,56 @@ export default function Home() {
     return tmrrw
   }
 
+  useEffect(() => {
+    const dataFetch = async () => {
+      // const baseUrl = `http://127.0.0.1:8000`
+      const baseUrl = `http://192.168.102.234:8040`
+      const url = `${baseUrl}/octopus/rates_with_battery_schedule/AGILE-FLEX-22-11-25?period_from=${dt.toISOString()}&period_to=${dt2.toISOString()}&refresh=${refresh}`
+      const data = await (await fetch(url)).json();
+      setRatesData(data);
+    };
+    dataFetch();
+  }, [])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+
+      const dataFetch = async () => {
+        const baseUrl = `http://192.168.102.234:8060`
+        const url = `${baseUrl}/foxcloud/sensors`
+        const data = await (await fetch(url)).json();
+        setSensorsData(data[0]);
+      };
+      dataFetch();
+
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
   const setSchedule = (rate_date: Date, e: React.MouseEvent<HTMLElement>) => {
 
     let url = "http://192.168.102.234:8060/foxcloud/battery_schedule/set"
     //let url = "http://127.0.0.1:8050/foxcloud/battery_schedule/set"  
 
-    postData(url, { "dt": rate_date }).then(
-      (data) => {
+    let tzAwareDate = new Date(rate_date)
+
+    postData(url, { "dt": tzAwareDate }).then(
+      (resp) => {
         try {
-          if (data == "OK") {
+          if (resp == "OK") {
             console.log("Success")
-            setRefresh(new Date())
+
+            let index = ratesData.findIndex(i => i.valid_from.toString() == rate_date.toString())
+            let rd = ratesData
+
+            if (ratesData[index].scheduled == null) {
+              rd[index].scheduled = rate_date
+            } else {
+              rd[index].scheduled = null
+            }
+
+            setRatesData(rd)
+            setRefresh(Date.now())
 
             return true
           } else {
@@ -99,65 +136,6 @@ export default function Home() {
     return false
   }
 
-  function getColorFromValue(value: number) {
-    if (value <= 12) return "green"
-    if (value <= 20) return "#FF00FF"
-    if (value <= 25) return "#000066"
-    if (value <= 30) return "#333333"
-    return "#000000"
-  }
-
-  function getBorderColor(rate_date: Date, date_on: Date, value: number) {
-    if (date_on != null) return "lime"
-    let now = new Date()
-    let dt2 = new Date(rate_date.getTime() + 1800000)
-    if (now >= rate_date && now < dt2) return "yellow"
-    return getColorFromValue(value)
-  }
-
-  function RateBox(props: RateBoxProps) {
-
-    let rate_date = props.children[2].props.dt
-    let value = props.children[0].props.v
-
-    let bg = getColorFromValue(value)
-    let bc = getBorderColor(rate_date, props.date_on, value)
-
-    return (
-      <div
-        className={styles.rate_box}
-        onClick={e => setSchedule(rate_date, e)}
-        style={{ "backgroundColor": bg, "borderColor": bc }}>
-        {props.children}
-      </div>
-    )
-  }
-
-  function RateValue(props: RateValueProps) {
-    return (
-      <h2>{props.v.toFixed(2)}</h2>
-    )
-  }
-
-  function RateTime(props: RateTimeProps) {
-    let local = new Date(props.dt)
-    return (
-      <h3>
-        {local.getHours().toString().padStart(2, '0')}:
-        {local.getMinutes().toString().padStart(2, '0')}
-      </h3>
-    )
-  }
-
-  function RateWeather(props: RateWeatherProps) {
-    return (
-      <div className={styles.rate_weather}>
-        {props.description}
-        <div className={styles.uv_emblem}>{props.uv_index}</div>
-      </div>
-    )
-  }
-
   function filterToday(rate: Rate) {
     let date = new Date(rate.valid_from)
     let tmrrw = tomorrow()
@@ -170,8 +148,6 @@ export default function Home() {
     return date >= tmrrw
   }
 
-
-
   return (
     <div className={styles.container}>
 
@@ -181,46 +157,53 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <h1>Octopus Agile</h1>
 
+        {sensorsData && (
+          <SensorContainer>
+            <Sensor label="Solar" unit="kWh" value={sensorsData.pvPower}></Sensor>
+            <Sensor label="SoC" unit="%" value={sensorsData.SoC}></Sensor>
+            <Sensor label="Grid" unit="kWh" value={sensorsData.gridConsumptionPower}></Sensor>
+            <Sensor label="Load" unit="kWh" value={sensorsData.loadsPower}></Sensor>
+            <Sensor label="Last update" unit="" value={new Date(sensorsData.dat).toLocaleTimeString()}></Sensor>
+          </SensorContainer>
+        )}
 
+        {ratesData && (
 
-        {!isLoading && (
+          <RatesPlaceholder>
 
+            <RatesContainer>
 
-          <div style={{ "display": "flex" }}>
+              <RatesTitle day="today" />
 
-
-            <div className={styles.rates}>
-
-              <div style={{ "flex": "100%" }}><h2>{printToday()}</h2></div>
-
-              {data.filter(filterToday).map((rate: Rate, index: number) =>
-                <RateBox key={index} date_on={rate.date_on}>
+              {ratesData.filter(filterToday).map((rate: Rate, index: number) =>
+                <RateBox key={index} date_on={rate.scheduled} on_click={setSchedule}>
                   <RateValue v={rate.value_inc_vat} />
                   <RateWeather description={rate.weather} uv_index={rate.uv_index} />
-                  <RateTime dt={new Date(rate.valid_from)} />
+                  <RateTime dt={rate.valid_from} />
                 </RateBox>
               )}
 
-            </div>
+            </RatesContainer>
 
+            <RatesContainer>
 
-            <div className={styles.rates}>
+              <RatesTitle day="tomorrow" />
 
-              <div style={{ "flex": "100%" }}><h2>{printTomorrow()}</h2></div>
-
-              {data.filter(filterTomorrow).map((rate: Rate, index: number) =>
-                <RateBox key={index} date_on={rate.date_on}>
+              {ratesData.filter(filterTomorrow).map((rate: Rate, index: number) =>
+                <RateBox key={index} date_on={rate.date_on} on_click={setSchedule}>
                   <RateValue v={rate.value_inc_vat} />
                   <RateWeather description={rate.weather} uv_index={rate.uv_index} />
-                  <RateTime dt={new Date(rate.valid_from)} />
+                  <RateTime dt={rate.valid_from} />
                 </RateBox>
               )}
+              {ratesData.filter(filterTomorrow).length == 0 && (
+                <h4>Data available after 4pm</h4>
+              )}
 
-            </div>
+            </RatesContainer>
 
-          </div>
+          </RatesPlaceholder>
 
         )}
 

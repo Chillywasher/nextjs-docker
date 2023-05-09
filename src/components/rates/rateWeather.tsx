@@ -1,6 +1,10 @@
 
 import styles from './ratebox.module.css'
 
+type RateWeatherProps = {
+    description: string;
+    uv_index: number;
+  }
 
 export default function RateWeather(props: RateWeatherProps) {
     return (
