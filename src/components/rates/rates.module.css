@@ -1,6 +1,6 @@
 .rates_placeholder {
     display: block;
-    max-width: 800px;
+    max-width: 760px;
 }
 
 .rates_container {
@@ -20,7 +20,8 @@
     margin: 5px;
     padding: 5px;
     text-align: center;
-    width: 110px;
+    flex: 1;
+    max-width: 104px;
 }
 
 .rate_value {
@@ -28,7 +29,7 @@
     font-weight: 500;    
     line-height: 0.5em;
     margin-top: 0;
-    text-align: right;
+    text-align: center;
 }
 
 .rate_value small {
@@ -41,7 +42,7 @@
     font-weight: 500;
     line-height: normal;
     margin: 0;
-    text-align: left;
+    text-align: center;
 }
 
 .rate_weather {

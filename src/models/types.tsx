@@ -1,5 +1,5 @@
 
-export interface Rate {
+export type Rate = {
 
     value_inc_vat: number;
     valid_from: Date;
@@ -9,7 +9,7 @@ export interface Rate {
 
 }
 
-export interface SensorData {
+export type SensorData = {
 
     dat: Date;
     batChargePower: number;
@@ -33,4 +33,14 @@ export interface SensorData {
     loads: number;
     input: number;
 
+}
+
+export enum DayEnum {
+    Today,
+    Tomorrow
+} 
+
+export enum RateSensorDisplayEnum {
+    TimeRemaining,
+    ActualTime
 }

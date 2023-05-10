@@ -4,66 +4,64 @@ import Head from 'next/head'
 import styles from '../styles/Home.module.css'
 import { postData } from '../utils/api'
 import { useState, useEffect } from 'react'
-import Sensor from '../components/sensors/sensor'
-import SensorContainer from '../components/sensors/sensorContainer'
+import NumberSensor from '../components/sensors/NumberSensor'
+import DateSensor from '../components/sensors/DateSensor'
 import RatesContainer from '../components/rates/ratesContainer'
 import RatesPlaceholder from '../components/rates/ratesPlaceholder'
 import RatesTitle from '../components/rates/ratesTitle'
-import RateBox from '../components/rates/rateBox'
-import {Rate, SensorData} from '../models/interfaces'
+import { Rate, SensorData, DayEnum, RateSensorDisplayEnum } from '../models/types'
+import RatesData from '../components/rates/ratesData'
+import SensorContainer from '../components/sensors/sensorContainer'
+import StatusSensor from '../components/sensors/StatusSensor'
+import RateSensor from '../components/sensors/RateSensor'
 
 export default function Home() {
 
   const [ratesData, setRatesData] = useState(Array<Rate>)
-  const [sensorsData, setSensorsData] = useState(null)
+  const [sensorData, setSensorData] = useState(null)
   const [refresh, setRefresh] = useState(Date.now())
 
-  const tomorrow = () => {
-    let today = new Date()
-    let tmrrw = new Date(today.setDate(today.getDate() + 1))
-    tmrrw.setHours(0, 0, 0, 0)
-    return tmrrw
-  }
-
-  const dataFetch = async () => {
+  const sensorDataFetch = async () => {
     try {
       const baseUrl = `http://192.168.102.234:8060`
       const url = `${baseUrl}/foxcloud/sensors`
       const data = await (await fetch(url)).json();
-      setSensorsData(data[0]);      
+      setSensorData(data[0]);
     } catch (error) {
       console.log(error)
     }
   };
 
-  useEffect(() => {
-    const dataFetch = async () => {
-      try {
-        let dt = new Date()
-        dt.setHours(0, 0, 0, 0)
-        let dt2 = new Date()
-        dt2.setHours(0, 0, 0, 0)
-        dt2.setDate(dt2.getDate() + 2)        
-        // const baseUrl = `http://127.0.0.1:8000`
-        const baseUrl = `http://192.168.102.234:8040`
-        const url = `${baseUrl}/octopus/rates_with_battery_schedule/AGILE-FLEX-22-11-25?period_from=${dt.toISOString()}&period_to=${dt2.toISOString()}&refresh=${refresh}`
-        const data = await (await fetch(url)).json();
-        setRatesData(data);        
-      } catch (error) {
-        console.log(error)
-      }
-    };
-    dataFetch();
-  }, [])
+  const ratesDataFetch = async () => {
+    try {
+      let dt = new Date()
+      dt.setHours(0, 0, 0, 0)
+      let dt2 = new Date()
+      dt2.setHours(0, 0, 0, 0)
+      dt2.setDate(dt2.getDate() + 2)
+      // const baseUrl = `http://127.0.0.1:8000`
+      const baseUrl = `http://192.168.102.234:8040`
+      const url = `${baseUrl}/octopus/rates_with_battery_schedule/AGILE-FLEX-22-11-25?period_from=${dt.toISOString()}&period_to=${dt2.toISOString()}&refresh=${refresh}`
+      const data = await (await fetch(url)).json();
+      setRatesData(data);
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   useEffect(() => {
-    dataFetch();
+    sensorDataFetch();
+    const interval = setInterval(() => {
+      sensorDataFetch();
+    }, 1 * 10 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
+    ratesDataFetch();
     const interval = setInterval(() => {
-      dataFetch();
-    }, 10000);
+      ratesDataFetch();
+    }, 30 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -105,19 +103,6 @@ export default function Home() {
     return false
   }
 
-  function filterToday(rate: Rate) {
-    let now = Date.now() - 1800000
-    let date = new Date(rate.valid_from)
-    let tmrrw = tomorrow()
-    return date < tmrrw && date.getTime() > now
-  }
-
-  function filterTomorrow(rate: Rate) {
-    let date = new Date(rate.valid_from)
-    let tmrrw = tomorrow()
-    return date >= tmrrw
-  }
-
   return (
     <div className={styles.container}>
 
@@ -127,42 +112,104 @@ export default function Home() {
 
       <main className={styles.main}>
 
-        {sensorsData && (
+        {sensorData && (
           <SensorContainer>
-            <Sensor label="Solar" unit="kWh" value={sensorsData.pvPower}></Sensor>
-            <Sensor label="SoC" unit="%" value={sensorsData.SoC}></Sensor>
-            <Sensor label="Grid" unit="kWh" value={sensorsData.gridConsumptionPower}></Sensor>
-            <Sensor label="Load" unit="kWh" value={sensorsData.loadsPower}></Sensor>
-            <Sensor label="Last update" unit="" value={new Date(sensorsData.dat).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}></Sensor>
+            <NumberSensor
+              label="Solar"
+              unit="kWh"
+              dp={3}
+              redThreshold={0}
+              amberThreshold={.700}
+              thresholdAscending={true}
+              value={sensorData.pvPower}
+            />
+            <NumberSensor
+              label="Grid"
+              unit="kWh"
+              dp={3}
+              value={sensorData.gridConsumptionPower}
+              redThreshold={0.70}
+              amberThreshold={1}
+              thresholdAscending={false}
+            />
+            <NumberSensor
+              label="Load"
+              unit="kWh"
+              dp={3}
+              value={sensorData.loadsPower}
+              redThreshold={2.4}
+              amberThreshold={1.2}
+              thresholdAscending={false}
+            />
+            <NumberSensor
+              label="Charge"
+              unit="kWh"
+              dp={3}
+              value={sensorData.batChargePower}
+              redThreshold={0}
+              amberThreshold={.5}
+              thresholdAscending={true}
+            /> 
+            <RateSensor
+              label="Battery Full"
+              unit="kWh"
+              dp={3}
+              display={RateSensorDisplayEnum.ActualTime}
+              currentValue={sensorData.SoC * .125}
+              rateValue={sensorData.batChargePower}
+              ascending={true}
+              targetValue={12.5}
+            />                   
+            <NumberSensor
+              label="Discharge"
+              unit="kWh"
+              dp={3}
+              value={sensorData.batDischargePower}
+              redThreshold={2}
+              amberThreshold={1}
+              thresholdAscending={false}
+            />
+            <RateSensor
+              label="Time Empty"
+              unit="kWh"
+              dp={3}
+              display={RateSensorDisplayEnum.ActualTime}
+              currentValue={sensorData.SoC * .125}
+              rateValue={sensorData.batDischargePower}
+              ascending={false}              
+              targetValue={1.25}
+            />              
+            <NumberSensor
+              label="SoC"
+              unit="%"
+              dp={0}
+              value={sensorData.SoC}
+              redThreshold={20}
+              amberThreshold={60}
+              thresholdAscending={true}
+            />                                
+            <StatusSensor
+              label="Status"
+              sensorData={sensorData}
+            />
+            <DateSensor
+              label="Last update"
+              value={new Date(sensorData.dat)}
+              redThreshold={{ date: new Date(), seconds: 360 }}
+              amberThreshold={{ date: new Date(), seconds: 240 }}
+            />
           </SensorContainer>
         )}
 
         {ratesData && (
-
           <RatesPlaceholder>
             <RatesContainer>
-              <RatesTitle day="today" />
-              {ratesData.filter(filterToday).map((rate: Rate, index: number) =>
-                <RateBox
-                  key={index}
-                  on_click={setSchedule}
-                  rate={rate}
-                />
-              )}
-
+              <RatesTitle day={DayEnum.Today} />
+              <RatesData day={DayEnum.Today} ratesData={ratesData} on_click={setSchedule} />
             </RatesContainer>
             <RatesContainer>
-              <RatesTitle day="tomorrow" />
-              {ratesData.filter(filterTomorrow).map((rate: Rate, index: number) =>
-                <RateBox
-                  key={index}
-                  on_click={setSchedule}
-                  rate={rate}
-                />
-              )}
-              {ratesData.filter(filterTomorrow).length == 0 && (
-                <h4>Data available after 4pm</h4>
-              )}
+              <RatesTitle day={DayEnum.Tomorrow} />
+              <RatesData day={DayEnum.Tomorrow} ratesData={ratesData} on_click={setSchedule} />
             </RatesContainer>
           </RatesPlaceholder>
         )}

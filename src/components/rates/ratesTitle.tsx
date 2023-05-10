@@ -1,5 +1,7 @@
+import { DayEnum } from "../../models/types"
+
 type RatesTitleProps = {
-    day: string
+    day: DayEnum
   }
 
 export default function RatesTitle(props: RatesTitleProps) {
@@ -7,7 +9,7 @@ export default function RatesTitle(props: RatesTitleProps) {
     const title = () => {
         let dt = new Date()
         switch (props.day) {
-            case "today":
+            case DayEnum.Today:
                 return dt.toLocaleDateString("en-GB", { "weekday": "long", "day": "numeric", "month": "long" })
         }
         let tmrrw = new Date()

@@ -9,27 +9,26 @@
     border-radius: 10px;        
     border: solid white 1px;
     margin-right: 5px;
+    margin-bottom: 5px;
+    min-width: 124px;
     padding: 20px 2px 20px 2px;
     text-align: center;
-    min-width: 120px;
 }
 
 .sensor h2 {
     font-size: 1.2em;
     margin: 0;
-    color: lime;
 }
 
 .sensor h2 small {
-    color: white;
-    font-weight: normal;
+    color: #ccc;
     font-size: 0.6em;
+    font-weight: normal;
     margin: 0;
 }
 
 .sensor h4 {
+    color: #ccc;
     font-size: 0.8em;
-    
     margin: 0;
-    color: white;
 }

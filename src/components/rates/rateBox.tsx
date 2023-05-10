@@ -1,5 +1,5 @@
 import styles from './rates.module.css'
-import {Rate} from '../../models/interfaces'
+import {Rate} from '../../models/types'
 
 type RateBoxProps = {
     children?: React.ReactNode;
