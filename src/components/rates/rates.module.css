@@ -1,5 +1,6 @@
 .rates_placeholder {
-    display: flex;
+    display: block;
+    max-width: 800px;
 }
 
 .rates_container {
@@ -7,7 +8,68 @@
     align-items: flex-start;
     display: flex;
     flex-wrap: wrap;
-    flex: 50%;
     padding: 0px;
-    width: 800px;
+}
+
+.rate_box {
+    border-radius: 10px;
+    border-style: solid;
+    border-width: 3px;
+    cursor: pointer;
+    height: 110px;
+    margin: 5px;
+    padding: 5px;
+    text-align: center;
+    width: 110px;
+}
+
+.rate_value {
+    font-size: 1.2em;
+    font-weight: 500;    
+    line-height: 0.5em;
+    margin-top: 0;
+    text-align: right;
+}
+
+.rate_value small {
+    font-size: 0.5em;
+    font-weight: 250;    
+}
+
+.rate_time {
+    font-size: 1em;
+    font-weight: 500;
+    line-height: normal;
+    margin: 0;
+    text-align: left;
+}
+
+.rate_weather {
+    display: flex;
+}
+
+.weather_cell {
+    flex: 50%;
+    justify-content:center;
+    text-align: center;
+}
+
+.weather_icon {
+    height: 48px;
+    width: 48px;
+}
+
+.uv_index {
+    background-color: #fff;
+    border-radius: 5px;
+    border: solid #333 2px;
+    color: #333;
+    display: block;
+    font-size: 0.8em;
+    font-weight: 700;
+    margin-left: 12px;
+    margin-top: 12px;
+    padding: 2px;
+    text-align: center;
+    width: 24px;
 }

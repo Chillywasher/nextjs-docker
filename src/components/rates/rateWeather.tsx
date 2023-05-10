@@ -1,5 +1,5 @@
 
-import styles from './ratebox.module.css'
+import styles from './rates.module.css'
 
 type RateWeatherProps = {
     description: string;

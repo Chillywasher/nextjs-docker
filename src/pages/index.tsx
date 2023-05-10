@@ -5,64 +5,17 @@ import styles from '../styles/Home.module.css'
 import { postData } from '../utils/api'
 import { useState, useEffect } from 'react'
 import Sensor from '../components/sensors/sensor'
-
-
 import SensorContainer from '../components/sensors/sensorContainer'
 import RatesContainer from '../components/rates/ratesContainer'
 import RatesPlaceholder from '../components/rates/ratesPlaceholder'
 import RatesTitle from '../components/rates/ratesTitle'
 import RateBox from '../components/rates/rateBox'
-import RateValue from '../components/rates/rateValue'
-import RateWeather from '../components/rates/rateWeather'
-import RateTime from '../components/rates/rateTime'
-
-type Rate = {
-  value_inc_vat: number;
-  valid_from: Date;
-  scheduled: Date;
-  weather: string;å
-  uv_index: number;
-}
-
-type SensorData = {
-
-  dat: Date;
-  batChargePower: number;
-  batDischargePower: number;
-  SoC: number;
-  batTemperature: number;
-  feedinPower: number;
-  generationPower: number;
-  gridConsumptionPower: number;
-  loadsPower: number;
-  pv1Power: number;
-  pv2Power: number;
-  pv3Power: number;
-  pv4Power: number;
-  pvPower: number;
-  chargeEnergyToTal: number;
-  dischargeEnergyToTal: number;
-  feedin: number;
-  generation: number;
-  gridConsumption: number;
-  loads: number;
-  input: number;
-
-}
+import {Rate, SensorData} from '../models/interfaces'
 
 export default function Home() {
 
   const [ratesData, setRatesData] = useState(Array<Rate>)
   const [sensorsData, setSensorsData] = useState(null)
-
-  let dt = new Date()
-  dt.setHours(0, 0, 0, 0)
-
-  let dt2 = new Date()
-  dt2.setHours(0, 0, 0, 0)
-  dt2.setDate(dt2.getDate() + 2)
-
-  const fetcher = async (url: string) => await fetch(url).then((res) => res.json());
   const [refresh, setRefresh] = useState(Date.now())
 
   const tomorrow = () => {
@@ -72,28 +25,44 @@ export default function Home() {
     return tmrrw
   }
 
+  const dataFetch = async () => {
+    try {
+      const baseUrl = `http://192.168.102.234:8060`
+      const url = `${baseUrl}/foxcloud/sensors`
+      const data = await (await fetch(url)).json();
+      setSensorsData(data[0]);      
+    } catch (error) {
+      console.log(error)
+    }
+  };
+
   useEffect(() => {
     const dataFetch = async () => {
-      // const baseUrl = `http://127.0.0.1:8000`
-      const baseUrl = `http://192.168.102.234:8040`
-      const url = `${baseUrl}/octopus/rates_with_battery_schedule/AGILE-FLEX-22-11-25?period_from=${dt.toISOString()}&period_to=${dt2.toISOString()}&refresh=${refresh}`
-      const data = await (await fetch(url)).json();
-      setRatesData(data);
+      try {
+        let dt = new Date()
+        dt.setHours(0, 0, 0, 0)
+        let dt2 = new Date()
+        dt2.setHours(0, 0, 0, 0)
+        dt2.setDate(dt2.getDate() + 2)        
+        // const baseUrl = `http://127.0.0.1:8000`
+        const baseUrl = `http://192.168.102.234:8040`
+        const url = `${baseUrl}/octopus/rates_with_battery_schedule/AGILE-FLEX-22-11-25?period_from=${dt.toISOString()}&period_to=${dt2.toISOString()}&refresh=${refresh}`
+        const data = await (await fetch(url)).json();
+        setRatesData(data);        
+      } catch (error) {
+        console.log(error)
+      }
     };
     dataFetch();
   }, [])
 
   useEffect(() => {
+    dataFetch();
+  }, []);
+
+  useEffect(() => {
     const interval = setInterval(() => {
-
-      const dataFetch = async () => {
-        const baseUrl = `http://192.168.102.234:8060`
-        const url = `${baseUrl}/foxcloud/sensors`
-        const data = await (await fetch(url)).json();
-        setSensorsData(data[0]);
-      };
       dataFetch();
-
     }, 10000);
     return () => clearInterval(interval);
   }, []);
@@ -137,9 +106,10 @@ export default function Home() {
   }
 
   function filterToday(rate: Rate) {
+    let now = Date.now() - 1800000
     let date = new Date(rate.valid_from)
     let tmrrw = tomorrow()
-    return date < tmrrw
+    return date < tmrrw && date.getTime() > now
   }
 
   function filterTomorrow(rate: Rate) {
@@ -153,7 +123,6 @@ export default function Home() {
 
       <Head>
         <title>HomeBot</title>
-        <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main className={styles.main}>
@@ -164,47 +133,38 @@ export default function Home() {
             <Sensor label="SoC" unit="%" value={sensorsData.SoC}></Sensor>
             <Sensor label="Grid" unit="kWh" value={sensorsData.gridConsumptionPower}></Sensor>
             <Sensor label="Load" unit="kWh" value={sensorsData.loadsPower}></Sensor>
-            <Sensor label="Last update" unit="" value={new Date(sensorsData.dat).toLocaleTimeString()}></Sensor>
+            <Sensor label="Last update" unit="" value={new Date(sensorsData.dat).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}></Sensor>
           </SensorContainer>
         )}
 
         {ratesData && (
 
           <RatesPlaceholder>
-
             <RatesContainer>
-
               <RatesTitle day="today" />
-
               {ratesData.filter(filterToday).map((rate: Rate, index: number) =>
-                <RateBox key={index} scheduled={rate.scheduled} on_click={setSchedule}>
-                  <RateValue v={rate.value_inc_vat} />
-                  <RateWeather description={rate.weather} uv_index={rate.uv_index} />
-                  <RateTime dt={rate.valid_from} />
-                </RateBox>
+                <RateBox
+                  key={index}
+                  on_click={setSchedule}
+                  rate={rate}
+                />
               )}
 
             </RatesContainer>
-
             <RatesContainer>
-
               <RatesTitle day="tomorrow" />
-
               {ratesData.filter(filterTomorrow).map((rate: Rate, index: number) =>
-                <RateBox key={index} scheduled={rate.scheduled} on_click={setSchedule}>
-                  <RateValue v={rate.value_inc_vat} />
-                  <RateWeather description={rate.weather} uv_index={rate.uv_index} />
-                  <RateTime dt={rate.valid_from} />
-                </RateBox>
+                <RateBox
+                  key={index}
+                  on_click={setSchedule}
+                  rate={rate}
+                />
               )}
               {ratesData.filter(filterTomorrow).length == 0 && (
                 <h4>Data available after 4pm</h4>
               )}
-
             </RatesContainer>
-
           </RatesPlaceholder>
-
         )}
 
       </main>
