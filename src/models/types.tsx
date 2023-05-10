@@ -44,3 +44,11 @@ export enum RateSensorDisplayEnum {
     TimeRemaining,
     ActualTime
 }
+
+export enum DatePartEnum {
+    Day,
+    MonthNameLong,
+    MonthNameShort,
+    WeekdayNameLong,
+    WeekdayNameShort,
+}
