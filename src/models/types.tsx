@@ -4,7 +4,7 @@ export type Rate = {
     value_inc_vat: number;
     valid_from: Date;
     scheduled: Date;
-    weather: string; å
+    weather: string;
     uv_index: number;
 
 }
@@ -33,6 +33,16 @@ export type SensorData = {
     loads: number;
     input: number;
 
+}
+
+export type EnergyData = {
+    chargeEnergyToTal: number;
+    dischargeEnergyToTal: number;
+    gridConsumption: number;
+    input: number;
+    loads: number;
+    periodFrom: Date;
+    periodTo: Date;
 }
 
 export enum DayEnum {

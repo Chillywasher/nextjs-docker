@@ -7,7 +7,7 @@ import DateSensor from '../components/sensors/DateSensor'
 import RatesContainer from '../components/rates/ratesContainer'
 import RatesPlaceholder from '../components/rates/ratesPlaceholder'
 import RatesTitle from '../components/rates/ratesTitle'
-import { Rate, SensorData, DayEnum, RateSensorDisplayEnum } from '../models/types'
+import { Rate, SensorData, EnergyData, DayEnum, RateSensorDisplayEnum } from '../models/types'
 import RatesData from '../components/rates/ratesData'
 import SensorContainer from '../components/sensors/sensorContainer'
 import StatusSensor from '../components/sensors/StatusSensor'
@@ -15,8 +15,12 @@ import RateSensor from '../components/sensors/RateSensor'
 
 export default function Home() {
 
+  let sd: SensorData 
+  let ed: EnergyData
+
   const [ratesData, setRatesData] = useState(Array<Rate>)
-  const [sensorData, setSensorData] = useState(null)
+  const [sensorData, setSensorData] = useState(sd)
+  const [energyData, setEnergyData] = useState(ed)  
   const [refresh, setRefresh] = useState(Date.now())
 
   const sensorDataFetch = async () => {
@@ -25,6 +29,17 @@ export default function Home() {
       const url = `${baseUrl}/foxcloud/sensors`
       const data = await (await fetch(url)).json();
       setSensorData(data[0]);
+    } catch (error) {
+      console.log(error)
+    }
+  };
+
+  const energyDataFetch = async () => {
+    try {
+      const baseUrl = `http://192.168.102.234:8060`
+      const url = `${baseUrl}/foxcloud/sensors/energy_last_hour`
+      const data = await (await fetch(url)).json();
+      setEnergyData(data[0]);
     } catch (error) {
       console.log(error)
     }
@@ -39,28 +54,31 @@ export default function Home() {
       dt2.setDate(dt2.getDate() + 2)
       // const baseUrl = `http://127.0.0.1:8000`
       const baseUrl = `http://192.168.102.234:8040`
-      const url = `${baseUrl}/octopus/rates_with_battery_schedule/AGILE-FLEX-22-11-25?period_from=${dt.toISOString()}&period_to=${dt2.toISOString()}&refresh=${refresh}`
-      const data = await (await fetch(url)).json();
-      setRatesData(data);
+      const url = `${baseUrl}/octopus/rates_with_battery_schedule/AGILE-FLEX-22-11-25?
+      period_from=${dt.toISOString()}&period_to=${dt2.toISOString()}&refresh=${refresh}`
+      const data = await (await fetch(url)).json()
+      setRatesData(data)
     } catch (error) {
       console.log(error)
     }
   }
 
   useEffect(() => {
-    sensorDataFetch();
+    sensorDataFetch()
+    energyDataFetch()
     const interval = setInterval(() => {
-      sensorDataFetch();
+      sensorDataFetch()
+      energyDataFetch()
     }, 1 * 10 * 1000);
-    return () => clearInterval(interval);
+    return () => clearInterval(interval)
   }, []);
 
   useEffect(() => {
-    ratesDataFetch();
+    ratesDataFetch()
     const interval = setInterval(() => {
-      ratesDataFetch();
-    }, 30 * 60 * 1000);
-    return () => clearInterval(interval);
+      ratesDataFetch()
+    }, 30 * 60 * 1000)
+    return () => clearInterval(interval)
   }, []);
 
   const setSchedule = (rate_date: Date, e: React.MouseEvent<HTMLElement>) => {
@@ -100,6 +118,8 @@ export default function Home() {
       })
     return false
   }
+  
+  if(energyData) console.log(energyData)
 
   return (
     <div className={styles.container}>
@@ -110,11 +130,11 @@ export default function Home() {
 
       <main className={styles.main}>
 
-        {sensorData && (
+        {sensorData && energyData && (
           <SensorContainer>
             <NumberSensor
-              label="Solar"
-              unit="kWh"
+              label="Solar Power"
+              unit="kW"
               dp={3}
               redThreshold={0}
               amberThreshold={.700}
@@ -122,8 +142,17 @@ export default function Home() {
               value={sensorData.pvPower}
             />
             <NumberSensor
-              label="Grid"
+              label="Solar Energy"
               unit="kWh"
+              dp={3}
+              redThreshold={0}
+              amberThreshold={.700}
+              thresholdAscending={true}
+              value={energyData.input}
+            />            
+            <NumberSensor
+              label="Grid Power"
+              unit="kW"
               dp={3}
               value={sensorData.gridConsumptionPower}
               redThreshold={0.70}
@@ -131,8 +160,17 @@ export default function Home() {
               thresholdAscending={false}
             />
             <NumberSensor
-              label="Load"
+              label="Grid Energy"
               unit="kWh"
+              dp={3}
+              value={energyData.gridConsumption}
+              redThreshold={0.70}
+              amberThreshold={1}
+              thresholdAscending={false}
+            />            
+            <NumberSensor
+              label="Load Power"
+              unit="kW"
               dp={3}
               value={sensorData.loadsPower}
               redThreshold={2.4}
@@ -140,40 +178,65 @@ export default function Home() {
               thresholdAscending={false}
             />
             <NumberSensor
-              label="Charge"
+              label="Load Energy"
               unit="kWh"
+              dp={3}
+              value={energyData.loads}
+              redThreshold={2.4}
+              amberThreshold={1.2}
+              thresholdAscending={false}
+            />            
+            <NumberSensor
+              label="Charge Power"
+              unit="kW"
               dp={3}
               value={sensorData.batChargePower}
               redThreshold={0}
               amberThreshold={.5}
               thresholdAscending={true}
             /> 
+            <NumberSensor
+              label="Charge Energy"
+              unit="kWh"
+              dp={3}
+              value={energyData.chargeEnergyToTal}
+              redThreshold={0}
+              amberThreshold={.5}
+              thresholdAscending={true}
+            />             
             <RateSensor
               label="Battery Full"
-              unit="kWh"
               dp={3}
               display={RateSensorDisplayEnum.ActualTime}
               currentValue={sensorData.SoC * .125}
-              rateValue={sensorData.batChargePower}
+              rateValue={energyData.chargeEnergyToTal}
               ascending={true}
               targetValue={12.5}
             />                   
             <NumberSensor
-              label="Discharge"
-              unit="kWh"
+              label="Discharge Power"
+              unit="kW"
               dp={3}
               value={sensorData.batDischargePower}
               redThreshold={2}
               amberThreshold={1}
               thresholdAscending={false}
             />
+            <NumberSensor
+              label="Discharge Energy"
+              unit="kWh"
+              dp={3}
+              value={energyData.dischargeEnergyToTal}
+              redThreshold={2}
+              amberThreshold={1}
+              thresholdAscending={false}
+            />            
             <RateSensor
               label="Time Empty"
-              unit="kWh"
               dp={3}
               display={RateSensorDisplayEnum.ActualTime}
               currentValue={sensorData.SoC * .125}
-              rateValue={sensorData.batDischargePower}
+              rateValue={energyData.dischargeEnergyToTal}
               ascending={false}              
               targetValue={1.25}
             />              
@@ -182,7 +245,7 @@ export default function Home() {
               unit="%"
               dp={0}
               value={sensorData.SoC}
-              redThreshold={20}
+              redThreshold={30}
               amberThreshold={60}
               thresholdAscending={true}
             />                                

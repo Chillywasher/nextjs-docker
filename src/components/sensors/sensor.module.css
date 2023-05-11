@@ -10,8 +10,8 @@
     border: solid white 1px;
     margin-right: 5px;
     margin-bottom: 5px;
-    min-width: 112px;
-    padding: 20px 2px 20px 2px;
+    width: 104px;
+    padding: 10px 2px 10px 2px;
     text-align: center;
 }
 
@@ -30,5 +30,5 @@
 .sensor h4 {
     color: #ccc;
     font-size: 0.8em;
-    margin: 0;
+    margin: 5px 0px 0px 0px;
 }

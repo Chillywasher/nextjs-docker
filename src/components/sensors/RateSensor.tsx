@@ -11,7 +11,6 @@ type SensorProps = {
     label: string;
     rateValue: number;
     targetValue: number;
-    unit: string;
 }
 
 
@@ -27,6 +26,8 @@ export default function RateSensor(props: SensorProps) {
         if (props.rateValue == 0) return "--:--:--"
 
         const totalSeconds = (hoursDiff() / props.rateValue) * 60 * 60
+
+        console.log(props.label, hoursDiff(), "Rate", props.rateValue, "Seconds", totalSeconds)
 
         let hours = 0
         let minutes = 0
