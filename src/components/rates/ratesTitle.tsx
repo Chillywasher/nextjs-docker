@@ -36,6 +36,6 @@ export default function RatesTitle(props: RatesTitleProps) {
     }
 
     return (
-        <div style={{ "flex": "100%" }}><h2>{title()}</h2></div>
+        <div style={{ flex: "100%" }}><h2>{title()}</h2></div>
     )
 }

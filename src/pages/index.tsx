@@ -119,8 +119,6 @@ export default function Home() {
     return false
   }
   
-  if(energyData) console.log(energyData)
-
   return (
     <div className={styles.container}>
 
@@ -136,7 +134,7 @@ export default function Home() {
               label="Solar Power"
               unit="kW"
               dp={3}
-              redThreshold={0}
+              redThreshold={0.006}
               amberThreshold={.700}
               thresholdAscending={true}
               value={sensorData.pvPower}
@@ -145,7 +143,7 @@ export default function Home() {
               label="Solar Energy"
               unit="kWh"
               dp={3}
-              redThreshold={0}
+              redThreshold={0.006}
               amberThreshold={.700}
               thresholdAscending={true}
               value={energyData.input}
@@ -193,7 +191,7 @@ export default function Home() {
               value={sensorData.batChargePower}
               redThreshold={0}
               amberThreshold={.5}
-              thresholdAscending={true}
+              thresholdAscending={true}  
             /> 
             <NumberSensor
               label="Charge Energy"
@@ -202,7 +200,7 @@ export default function Home() {
               value={energyData.chargeEnergyToTal}
               redThreshold={0}
               amberThreshold={.5}
-              thresholdAscending={true}
+              thresholdAscending={true} 
             />             
             <RateSensor
               label="Battery Full"
@@ -211,7 +209,7 @@ export default function Home() {
               currentValue={sensorData.SoC * .125}
               rateValue={energyData.chargeEnergyToTal}
               ascending={true}
-              targetValue={12.5}
+              targetValue={12.5}         
             />                   
             <NumberSensor
               label="Discharge Power"
@@ -229,7 +227,7 @@ export default function Home() {
               value={energyData.dischargeEnergyToTal}
               redThreshold={2}
               amberThreshold={1}
-              thresholdAscending={false}
+              thresholdAscending={false}          
             />            
             <RateSensor
               label="Time Empty"

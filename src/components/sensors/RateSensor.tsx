@@ -11,6 +11,7 @@ type SensorProps = {
     label: string;
     rateValue: number;
     targetValue: number;
+    borderColor?: string;
 }
 
 
@@ -26,8 +27,6 @@ export default function RateSensor(props: SensorProps) {
         if (props.rateValue == 0) return "--:--:--"
 
         const totalSeconds = (hoursDiff() / props.rateValue) * 60 * 60
-
-        console.log(props.label, hoursDiff(), "Rate", props.rateValue, "Seconds", totalSeconds)
 
         let hours = 0
         let minutes = 0
@@ -52,8 +51,16 @@ export default function RateSensor(props: SensorProps) {
 
     }
 
+    const borderColor = (): string => {
+        if (typeof props.borderColor !== 'undefined') {
+            return props.borderColor
+        } else {
+            return "#ccc"
+        }
+    }
+
     return (
-        <div className={styles.sensor}>
+        <div className={styles.sensor} style={{ borderColor: borderColor() }}>
             <h2>{estTime()}</h2>
             <h4>{props.label}</h4>
         </div>

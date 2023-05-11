@@ -4,7 +4,8 @@ import styles from './sensor.module.css'
 
 type SensorProps = {
     label: string;
-    sensorData: SensorData
+    sensorData: SensorData;
+    borderColor?: string;
 }
 
 type statustype = {
@@ -32,23 +33,19 @@ export default function StatusSensor(props: SensorProps) {
         return { label: "Grid", color: "red" }
     }
 
-    // const color = () => {
-    //     switch(status()){
-    //         case "Exporting":
-    //             return "lime"
-    //         case "Sol+chrg":
-    //             return "lime"
-    //         case "Battery":
-    //             return "gold"
-    //         }
-    //     return "red"
-    // }
-
     const status = get_status()
 
+    const borderColor = (): string => {
+        if (typeof props.borderColor !== 'undefined') {
+            return props.borderColor
+        } else {
+            return status.color;
+        }
+    }
+
     return (
-        <div className={styles.sensor}>
-            <h2 style={{ "color": status.color }}>{status.label}</h2>
+        <div className={styles.sensor} style={{ borderColor: borderColor() }}>
+            <h2 style={{ color: status.color }}>{status.label}</h2>
             <h4>{props.label}</h4>
         </div>
     )
